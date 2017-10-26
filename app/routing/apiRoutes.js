@@ -1,51 +1,48 @@
-var friendsData = require('../data/friends.js');
-var path = require('path');
+var friends = require("../data/friends");
+
+module.exports = function(app) {
+
+  app.get("/api/friends", function(req, res) {
+    res.json(friends);
+  });
 
 
-var totalDifference = 0;
+  app.post("/api/friends", function(req, res) {
+ 
+    var bestMatch = {
+      name: "",
+      photo: "",
+      matchDifference: Infinity
+    };
 
-module.exports = function(app){
-	app.get('/api/friends', function(req, res){
-		res.json(friendsData);
-	});
+    var userData = req.body;
+    var userScores = userData.scores;
 
-// JSON pushed to array
-
-
-	app.post('/api/friends', function(req, res){
-
-		var greatMatch = {
-			name: "",
-			image: "",
-			matchDifference: 1000
-		};
-		var usrData 	= req.body;
-		var usrName 	= usrData.name;
-		var usrImage 	= usrData.image;
-		var usrScores 	= usrData.scores;
-
-		var totalDifference = 0;
+		var totalDifference;
 
 		
-		for(var i = 0; i < [friendsData].length-1; i++){
-			console.log(friendsData[i].name);
+		for(var i = 0; i < [friends].length-1; i++){
+			var currentFriend = friends[i];
 			totalDifference = 0;
-
+			console.log(currentFriend.name);
 			//Loop for difference
-			for(var j = 0; j < 10; j++){
-				totalDifference += Math.abs(parseInt(usrScores[j]) - parseInt(friends[i].scores[j]));
-				if (totalDifference <= greatMatch.friendDifference){
-
+			for(var j = 0; j < currentFriend.scores.length; j++){
+				var currentFriendScore = currentFriend.scores[j];
+				var currentUserScore = userScores[j];
+				totalDifference += Math.abs(parseInt(usrScores[j]) - parseInt(currentFriendScore));
+			}
+				if (totalDifference <= bestMatch.friendDifference){
+				
 					// Reset the bestMatch to be the new friend. 
-					greatMatch.name = friendsData[i].name;
-					greatMatch.photo = friendsData[i].photo;
-					greatMatch.matchDifference = totalDifference;
-				}
+					bestMatch.name = currentFriend.name;
+					bestMatch.photo = currentFriend.photo;
+					bestMatch.friendDifference = totalDifference;
+				
 			}
 		}
 
-		friendsData.push(usrData);
+		friends.push(userData);
  
-		res.json(greatMatch);
+		res.json(bestMatch);
 	});
 };
